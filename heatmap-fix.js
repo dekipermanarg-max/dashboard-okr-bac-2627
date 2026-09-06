@@ -43,9 +43,32 @@
       meta.textContent=`${metrics.length} metric • ${rows.length} cabang • ${period||'—'}`;
     }
   };
-  window.heatmapRepairInit=function(){
-    try{ if(typeof renderFilters==='function') renderFilters(); }catch(e){}
+
+  async function ensureData(){
+    if(window.APP?.data?.length && window.APP?.periods?.length) return true;
+    if(typeof decodeBundle!=='function') return false;
+    try{
+      const bundle=await decodeBundle();
+      window.APP=bundle.app;
+      window.MASTER=bundle.master;
+      window.TARGET=bundle.target;
+      window.state=window.state||{period:'',region:'ALL',branch:'ALL',priority:'ALL'};
+      if(!state.period && APP.periods?.length) state.period=APP.periods[APP.periods.length-1];
+      return true;
+    }catch(e){
+      console.error('OKR data bootstrap failed:',e);
+      return false;
+    }
+  }
+
+  window.heatmapRepairInit=async function(){
+    const ok=await ensureData();
+    if(!ok)return;
+    try{ if(typeof renderFilters==='function') renderFilters(); }catch(e){console.error('renderFilters:',e)}
+    try{ if(typeof renderAll==='function') renderAll(); }catch(e){console.error('renderAll:',e)}
     try{ renderHeat(); }catch(e){ console.error('Heatmap repair:',e); }
+    try{ if(typeof populateOkrFilters==='function') populateOkrFilters(); }catch(e){}
+    try{ if(typeof renderOkrMaster==='function') renderOkrMaster(); }catch(e){}
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(window.heatmapRepairInit,0));
   else setTimeout(window.heatmapRepairInit,0);
