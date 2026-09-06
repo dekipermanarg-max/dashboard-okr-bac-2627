@@ -21,15 +21,18 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Apply BAC premium UI
+      - name: Apply BAC premium UI + heatmap repair
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('index.html')
           s = p.read_text(encoding='utf-8')
-          tag = '<link rel="stylesheet" href="ui.css">'
-          if tag not in s:
-              s = s.replace('</head>', tag + '</head>', 1)
+          css = '<link rel="stylesheet" href="ui.css">'
+          if css not in s:
+              s = s.replace('</head>', css + '</head>', 1)
+          js = '<script src="heatmap-fix.js"></script>'
+          if js not in s:
+              s = s.replace('</body>', js + '</body>', 1)
           p.write_text(s, encoding='utf-8')
           PY
       - name: Upload artifact
