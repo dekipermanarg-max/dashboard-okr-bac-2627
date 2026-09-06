@@ -1,6 +1,6 @@
 (function(){
   function metricList(){
-    return APP.metrics || [
+    return (typeof APP!=='undefined' && APP.metrics) ? APP.metrics : [
       'Attendance','Students Assignment to Students Mentor (Wali)','Session by Qualified Teacher (SQT)',
       'Completion TO UTBK','Completion TO TKA Reguler 1','Average Drill Soal','Konsultasi 1',
       'Partisipasi Tes Diagnostik','Motivatalks','Pengisian Growth Journal Onboarding Mitra','AUVI TV',
@@ -27,7 +27,7 @@
   }
   window.renderHeat=function(){
     const head=document.getElementById('heatHead'), body=document.getElementById('heatBody');
-    if(!head||!body||!APP?.data)return;
+    if(!head||!body||typeof APP==='undefined'||!APP?.data)return;
     const metrics=metricList().filter(allowed);
     const period=state.period || APP.periods?.at(-1);
     const rows=APP.data.filter(r=>(!period||r.period===period)&&(state.region==='ALL'||r.region===state.region)&&(state.branch==='ALL'||r.branch===state.branch));
@@ -45,14 +45,15 @@
   };
 
   async function ensureData(){
-    if(window.APP?.data?.length && window.APP?.periods?.length) return true;
-    if(typeof decodeBundle!=='function') return false;
     try{
+      if(typeof APP!=='undefined' && APP?.data?.length && APP?.periods?.length) return true;
+      if(typeof decodeBundle!=='function') throw new Error('decodeBundle tidak ditemukan');
       const bundle=await decodeBundle();
-      window.APP=bundle.app;
-      window.MASTER=bundle.master;
-      window.TARGET=bundle.target;
-      window.state=window.state||{period:'',region:'ALL',branch:'ALL',priority:'ALL'};
+      // IMPORTANT: index.html declares APP/MASTER/TARGET with let.
+      // Assign those lexical globals directly; window.APP is a different binding.
+      APP=bundle.app;
+      MASTER=bundle.master;
+      TARGET=bundle.target;
       if(!state.period && APP.periods?.length) state.period=APP.periods[APP.periods.length-1];
       return true;
     }catch(e){
