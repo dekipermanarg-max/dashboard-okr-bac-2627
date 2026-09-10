@@ -33,7 +33,9 @@ jobs:
               m=re.search(rf'{name}:`([^`]*)`', s)
               if not m:
                   raise SystemExit(f'Missing {name}')
-              return json.loads(gzip.decompress(base64.b64decode(m.group(1))))
+              b=m.group(1).strip()
+              b += '=' * (-len(b) % 4)
+              return json.loads(gzip.decompress(base64.b64decode(b)))
           app=unpack('dataGzipB64')
           master=unpack('masterGzipB64')
           target=unpack('targetGzipB64')
