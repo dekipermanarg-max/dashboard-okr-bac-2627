@@ -21,19 +21,21 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Use clean dashboard shell
+      - name: Build dashboard with local OKR bundle
         run: |
           cp index-fixed.html index.html
+          curl -L --fail --retry 3 "https://raw.githubusercontent.com/dekipermanarg-max/dashboard-okr-bac-2627/ce4432333b2a00eb715c96a7a7e812c2ba96f7c7/data.js" -o okr-bundle.js
           python3 - <<'PY'
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text()
           old='<script src="data.js"></script>'
-          new='''<script src="https://raw.githubusercontent.com/dekipermanarg-max/dashboard-okr-bac-2627/ce4432333b2a00eb715c96a7a7e812c2ba96f7c7/data.js"></script><script>decodeBundle().then(d=>window.__OKR_DATA=d).catch(e=>console.error("OKR data bootstrap failed",e));</script><script src="boot.js"></script>'''
+          new='''<script src="okr-bundle.js"></script><script>decodeBundle().then(d=>window.__OKR_DATA=d).catch(e=>console.error("OKR data bootstrap failed",e));</script><script src="boot.js"></script>'''
           if old not in s:
               raise SystemExit('Expected data.js script tag not found')
           p.write_text(s.replace(old,new))
           PY
+          test -s okr-bundle.js
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
