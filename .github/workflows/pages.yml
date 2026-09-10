@@ -24,6 +24,10 @@ jobs:
       - name: Build dashboard
         run: |
           cp index-fixed.html index.html
+          curl -L --fail --silent --show-error "https://raw.githubusercontent.com/dekipermanarg-max/dashboard-okr-bac-2627/5ea48777dfe38ab8531081434d9977adc1f397a6/data.js" -o okr-data.js
+          cat >> okr-data.js <<'EOF'
+          decodeBundle().then(d=>window.__OKR_DATA=d).catch(e=>console.error('OKR data bootstrap failed',e));
+          EOF
           python3 - <<'PY'
           from pathlib import Path
           p=Path('index.html')
