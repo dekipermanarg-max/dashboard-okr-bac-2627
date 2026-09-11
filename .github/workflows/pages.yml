@@ -29,7 +29,11 @@ jobs:
           p=Path('index.html')
           s=p.read_text()
           old='<link rel="stylesheet" href="ui.css">'
-          new='<link rel="stylesheet" href="ui.css"><link rel="stylesheet" href="logo.css">'
+          new='''<link rel="stylesheet" href="ui.css"><style>
+          .logo{font-size:0!important;letter-spacing:0!important;height:150px!important;padding:0!important;background:url("logo.svg") center top/220px auto no-repeat!important}
+          .logo small,.logo:after{display:none!important}
+          @media(max-width:1050px){.logo{height:70px!important;background-size:60px auto!important}.logo:before{content:none!important}}
+          </style>'''
           if old not in s:
               raise SystemExit('Expected ui.css stylesheet tag not found')
           s=s.replace(old,new)
@@ -40,9 +44,8 @@ jobs:
           p.write_text(s.replace(old,new))
           PY
           test -s okr-data.js
-          test -s logo.css
           test -s logo.svg
-          wc -c okr-data.js logo.css logo.svg
+          wc -c okr-data.js logo.svg
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
