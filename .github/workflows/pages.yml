@@ -28,6 +28,11 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text()
+          old='<link rel="stylesheet" href="ui.css">'
+          new='<link rel="stylesheet" href="ui.css"><link rel="stylesheet" href="logo.css">'
+          if old not in s:
+              raise SystemExit('Expected ui.css stylesheet tag not found')
+          s=s.replace(old,new)
           old='<script src="data.js"></script>'
           new='<script src="okr-data.js"></script><script src="boot.js"></script>'
           if old not in s:
@@ -35,7 +40,9 @@ jobs:
           p.write_text(s.replace(old,new))
           PY
           test -s okr-data.js
-          wc -c okr-data.js
+          test -s logo.css
+          test -s logo.svg
+          wc -c okr-data.js logo.css logo.svg
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
